@@ -1,0 +1,64 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  username  String   @unique
+  password  String
+  role      String   @default("moderator")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Department {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String   @default("")
+  color       String   @default("#3b82f6")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  ranks       Rank[]
+  staff       StaffMember[]
+}
+
+model Rank {
+  id           String   @id @default(cuid())
+  name         String   @unique
+  level        Int      @default(10)
+  permissions  String[]
+  departmentId String?
+  department   Department? @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  staff        StaffMember[]
+}
+
+model Announcement {
+  id        String   @id @default(cuid())
+  title     String
+  content   String
+  author    String
+  priority  String   @default("medium")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model StaffMember {
+  id           String   @id @default(cuid())
+  username     String
+  discordId    String?
+  rankId       String
+  rank         Rank     @relation(fields: [rankId], references: [id], onDelete: Cascade)
+  departmentId String?
+  department   Department? @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  status       String   @default("offline")
+  lastSeen     DateTime @default(now())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
